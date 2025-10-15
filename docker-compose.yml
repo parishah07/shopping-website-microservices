@@ -1,0 +1,114 @@
+version: '3.8'
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    ports:
+      - "15672:15672" # RabbitMQ management UI
+      - "5672:5672"   # RabbitMQ message port
+    networks:
+      - msnet
+
+  kong-database:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: kong
+      POSTGRES_DB: kong
+      POSTGRES_PASSWORD: kong
+    volumes:
+      - kong_data:/var/lib/postgresql/data
+    networks:
+      - msnet
+
+  kong-migrations:
+    image: kong:3.7
+    command: kong migrations bootstrap
+    depends_on:
+      - kong-database
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-database
+      KONG_PG_USER: kong
+      KONG_PG_PASSWORD: kong
+      KONG_PASSWORD: kong
+    networks:
+      - msnet
+
+  kong:
+    image: kong:3.7
+    restart: always
+    depends_on:
+      - kong-database
+      - kong-migrations
+      - user-service
+      - order-service
+      - inventory-service
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-database
+      KONG_PG_USER: kong
+      KONG_PG_PASSWORD: kong
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      KONG_PROXY_LISTEN: 0.0.0.0:8000
+    ports:
+      - "8000:8000" # public API gateway port
+      - "8001:8001" # admin API (internal)
+    networks:
+      - msnet
+
+  user-service:
+    build: ./user-service
+    environment:
+      - PORT=3004
+    ports:
+      - "3004:3004"
+    networks:
+      - msnet
+
+  inventory-service:
+    build: ./inventory-service
+    environment:
+      - PORT=3001
+    ports:
+      - "3001:3001"
+    networks:
+      - msnet
+
+  order-service:
+    build: ./order-service
+    environment:
+      - PORT=3003
+      - RABBIT_URL=amqp://rabbitmq:5672
+    depends_on:
+      - rabbitmq
+      - inventory-service
+    ports:
+      - "3003:3003"
+    networks:
+      - msnet
+
+  notification-service:
+    build: ./notification-service
+    environment:
+      - PORT=3002
+      - RABBIT_URL=amqp://rabbitmq:5672
+    depends_on:
+      - rabbitmq
+    ports:
+      - "3002:3002"
+    networks:
+      - msnet
+
+volumes:
+  kong_data:
+
+networks:
+  msnet:
+    driver: bridge
