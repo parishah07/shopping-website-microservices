@@ -29,7 +29,8 @@ steps:
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
   entrypoint: 'gcloud'
   args:
-    - 'container'
+    - 'artifacts'
+    - 'docker'
     - 'images'
     - 'scan'
     - 'gcr.io/$PROJECT_ID/api-gateway:$SHORT_SHA' # Scan the correct tag
@@ -55,5 +56,5 @@ steps:
   - '--filename=kubernetes'
   - '--location=us-central1-a'
   - '--cluster=shopping-website-cluster'
-  options:
-    logging: CLOUD_LOGGING_ONLY
+options:
+  logging: CLOUD_LOGGING_ONLY
