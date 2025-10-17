@@ -33,9 +33,9 @@ steps:
     - 'docker'
     - 'images'
     - 'scan'
-    - 'gcr.io/$PROJECT_ID/api-gateway:$SHORT_SHA' # Scan the correct tag
+    - 'gcr.io/$PROJECT_ID/api-gateway:$SHORT_SHA'
     - '--format=json'
-    - '--severity=HIGH'
+    # The --severity=HIGH argument has been removed from this step
 
 # IMPORTANT: Update Kubernetes manifests with the new image tag
 - name: 'gcr.io/cloud-builders/gcloud'
