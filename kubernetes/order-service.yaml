@@ -28,3 +28,15 @@ spec:
   ports:
   - port: 3003
     targetPort: 3003
+
+
+  env:
+  - name: RABBIT_HOST
+    value: "rabbitmq"
+  - name: RABBIT_PORT
+    value: "5672"
+  - name: RABBIT_USER
+    value: "guest"
+  - name: RABBIT_PASS
+    value: "guest"
+
