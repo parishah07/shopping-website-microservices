@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  user-service:
+    image: ${USER_SERVICE_IMAGE}
+  inventory-service:
+    image: ${INVENTORY_SERVICE_IMAGE}
+  order-service:
+    image: ${ORDER_SERVICE_IMAGE}
+  notification-service:
+    image: ${NOTIFICATION_SERVICE_IMAGE}
+  api-gateway:
+    image: ${API_GATEWAY_IMAGE}
